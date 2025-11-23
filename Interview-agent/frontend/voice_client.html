@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Interview Practice Partner - Voice Mode</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div class="wrapper">
+
+        <h1>Interview Practice Partner</h1>
+        <p class="subtitle">Voice-based mock interview system</p>
+
+        <div class="controls">
+            <label>Session ID:</label>
+            <input id="sessionId" value="test1" />
+
+            <label for="role">Role:</label>
+            <select id="role">
+                <option value="software_engineer">Software Engineer</option>
+                <option value="sales">Sales</option>
+                <option value="retail_associate">Retail Associate</option>
+            </select>
+
+            <button id="nextQuestionBtn">Start / Next Question</button>
+        </div>
+
+        <div id="questionBox" class="card">Question will appear here...</div>
+
+        <div class="recorder">
+            <button id="recordBtn">🎤 Start Recording</button>
+            <button id="stopBtn" disabled>⏹ Stop</button>
+            <span id="status">Idle</span>
+        </div>
+
+        <div id="transcriptBox" class="card">
+            <strong>Your Answer:</strong>
+            <p id="transcript"></p>
+        </div>
+
+        <div id="feedbackBox" class="card">
+            <strong>Feedback:</strong>
+            <pre id="feedbackText">Feedback appears here...</pre>
+        </div>
+
+        <button id="endBtn" class="end-btn">End Interview & Show Report</button>
+    </div>
+
+    <script>
+        const backendURL = "http://localhost:8000/interview";
+
+        const nextBtn = document.getElementById("nextQuestionBtn");
+        const recordBtn = document.getElementById("recordBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const endBtn = document.getElementById("endBtn");
+
+        const transcriptEl = document.getElementById("transcript");
+        const feedbackEl = document.getElementById("feedbackText");
+        const questionEl = document.getElementById("questionBox");
+        const statusEl = document.getElementById("status");
+
+        let recognition;
+        let finalTranscript = "";
+
+        nextBtn.onclick = async () => {
+            const body = {
+                session_id: document.getElementById("sessionId").value,
+                role: document.getElementById("role").value,
+                request_next: true
+            };
+
+            const res = await fetch(backendURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+
+            const data = await res.json();
+            questionEl.innerText = data.message;
+            speak(data.message);
+        };
+
+        function speak(text) {
+            const utter = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utter);
+        }
+
+        recordBtn.onclick = () => {
+            if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+                alert("Speech Recognition not supported. Use Chrome.");
+                return;
+            }
+
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SR();
+            recognition.lang = "en-US";
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            finalTranscript = "";
+            transcriptEl.textContent = "";
+
+            recordBtn.disabled = true;
+            stopBtn.disabled = false;
+
+            statusEl.innerText = "Listening...";
+
+            recognition.onresult = (e) => {
+                let interim = "";
+                for (let i = e.resultIndex; i < e.results.length; i++) {
+                    if (e.results[i].isFinal) {
+                        finalTranscript += e.results[i][0].transcript;
+                    } else {
+                        interim += e.results[i][0].transcript;
+                    }
+                }
+                transcriptEl.textContent = finalTranscript + " " + interim;
+            };
+
+            recognition.start();
+        };
+
+        stopBtn.onclick = async () => {
+            recognition.stop();
+
+            recordBtn.disabled = false;
+            stopBtn.disabled = true;
+            statusEl.innerText = "Processing...";
+
+            const answer = transcriptEl.textContent.trim();
+            if (!answer) {
+                feedbackEl.innerText = "No speech captured.";
+                return;
+            }
+
+            const body = {
+                session_id: document.getElementById("sessionId").value,
+                role: document.getElementById("role").value,
+                user_message: answer
+            };
+
+            const res = await fetch(backendURL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+
+            const data = await res.json();
+
+            if (data.type === "followup") {
+                feedbackEl.innerText = data.message;
+                speak(data.message);
+            } else if (data.type === "repair") {
+                feedbackEl.innerText = data.message;
+                speak(data.message);
+            } else if (data.type === "acknowledge") {
+                feedbackEl.innerText = "Answer saved. Asking next question...";
+                speak("Thanks, here's the next question.");
+                questionEl.innerText = data.next_question;
+                speak(data.next_question);
+            }
+
+            statusEl.innerText = "Idle";
+        };
+
+        endBtn.onclick = async () => {
+                const body = {
+                    session_id: document.getElementById("sessionId").value,
+                    role: document.getElementById("role").value,
+                    end_interview: true
+                };
+
+                const res = await fetch(backendURL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await res.json();
+
+                const report = data.report;
+                const scores = report.scores;
+                const recs = report.recommendations;
+
+                
+                let formatted = "Recommendations:\n\n";
+                recs.forEach((r, i) => {
+                    formatted += `${ i + 1 }. ${ r } \n`;
+                });
+
+                formatted += `\n-- - Score Summary-- -\n`;
+                formatted += `Communication: ${ scores.communication } \n`;
+                formatted += `Clarity: ${ scores.clarity } \n`;
+                formatted += `Knowledge Depth: ${ scores.knowledge_depth } \n`;
+
+                
+                feedbackEl.innerText = formatted;
+
+                speak("Your interview is complete. Here are your recommendations and score summary.");
+            };
+    </script>
+
+</body>
+
+</html>

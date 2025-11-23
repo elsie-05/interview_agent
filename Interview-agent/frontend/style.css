@@ -1,0 +1,174 @@
+/* ============ Tropical Jade Sunrise UI ============ */
+
+:root {
+    --peach: #FCA47C;
+    --sun: #F9D770;
+    --mint: #A1C0A6;
+    --aqua: #23CED9;
+    --deep-teal: #097C87;
+
+    --bg: #fefefe;
+    --text: #083b3d;
+    --muted: #5f7c7d;
+
+    --radius: 14px;
+    --shadow: 0 8px 22px rgba(0, 0, 0, 0.10);
+}
+
+/* ---------- Base Page ---------- */
+body {
+    margin: 0;
+    font-family: "Inter", sans-serif;
+    background: linear-gradient(140deg, var(--sun) 0%, #fff 40%, var(--mint) 100%);
+    color: var(--text);
+    padding: 0;
+}
+
+.wrapper {
+    max-width: 900px;
+    margin: 40px auto;
+    background: rgba(255, 255, 255, 0.60);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+
+/* ---------- Title ---------- */
+h1 {
+    text-align: center;
+    font-size: 34px;
+    margin-bottom: 6px;
+    color: var(--deep-teal);
+    font-weight: 800;
+}
+
+.subtitle {
+    text-align: center;
+    color: var(--muted);
+    margin-bottom: 30px;
+}
+
+/* ---------- Controls Section ---------- */
+.controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.controls input,
+.controls select {
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    border: 1px solid #d6e6e8;
+    background: #ffffffcc;
+    backdrop-filter: blur(4px);
+    font-size: 14px;
+    color: var(--text);
+    min-width: 150px;
+}
+
+/* ---------- Buttons ---------- */
+button {
+    cursor: pointer;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    border: 0;
+    font-size: 15px;
+    font-weight: 600;
+    transition: 0.2s ease;
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+/* main action */
+#nextQuestionBtn,
+#recordBtn {
+    background: var(--aqua);
+    color: #fff;
+    box-shadow: 0 6px 15px rgba(35, 206, 217, 0.35);
+}
+
+#nextQuestionBtn:hover,
+#recordBtn:hover {
+    background: #1bb7c3;
+}
+
+/* stop button */
+#stopBtn {
+    background: var(--peach);
+    color: #fff;
+}
+
+#stopBtn:hover {
+    background: #e98f69;
+}
+
+/* end interview */
+.end-btn {
+    background: var(--deep-teal);
+    color: #fff;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.end-btn:hover {
+    background: #075d63;
+}
+
+/* ---------- Cards ---------- */
+.card {
+    background: #ffffffdd;
+    backdrop-filter: blur(8px);
+    padding: 18px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+/* ---------- Feedback Panel ---------- */
+#feedbackText {
+    background: transparent;
+    padding-top: 4px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    color: var(--deep-teal);
+    font-size: 15px;
+}
+
+/* recommendation style */
+.recommendation-item {
+    background: linear-gradient(90deg, var(--mint) 0%, var(--aqua)20%, transparent 100%);
+    padding: 12px;
+    border-left: 5px solid var(--deep-teal);
+    border-radius: 10px;
+    margin: 8px 0;
+}
+
+/* ---------- Recorder line ---------- */
+.recorder {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* ---------- Mobile Responsive ---------- */
+@media (max-width: 700px) {
+    .wrapper {
+        margin: 10px;
+        padding: 18px;
+    }
+
+    h1 {
+        font-size: 28px;
+    }
+
+    button {
+        width: 100%;
+    }
+}
